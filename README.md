@@ -1,6 +1,6 @@
 # Schaffner
 
-A Ruby on Rails module for integrating a simple Search Engine into your Rails application.
+A Ruby on Rails gem for integrating a simple Search Engine into your Rails application.
 
 ## Overview
 
@@ -16,3 +16,4 @@ To use this codebase, you must include the `searchable` mixin in your ActiveReco
 class MyModel < ApplicationRecord
   include Schaffner::Searchable
 end
+```
