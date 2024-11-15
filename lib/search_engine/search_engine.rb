@@ -13,8 +13,12 @@ module Schaffner
 
     def create_index
       puts "Creating index..."
+
       indexer = Indexer.new
       indexer.create_index
+
+      index = indexer.index
+      return index
     end
   end
 end

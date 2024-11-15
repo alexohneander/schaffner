@@ -1,5 +1,32 @@
 module Schaffner
   class Indexer
+    @index = []
+
+    def self.index
+      @index
+    end
+    def index
+      self.class.index
+    end
+
+    # Add Documents to the Index
+    def add_to_index(document, model)
+      puts "Adding #{document} with the Type #{model.name} to the index."
+      
+      # Cleaning Sanitize
+      document.attributes.each do |attr_name, attr_value|
+        if attr_value.is_a?(String) && attr_name != "slug"
+
+          attr_value = ActionView::Base.full_sanitizer.sanitize(attr_value)
+          attr_value = attr_value.downcase
+
+          document[attr_name] = attr_value
+        end
+      end
+
+      self.index << [document, model.name]
+    end
+
     def initialize
       # @index = Index.new(index_dir)
     end
@@ -9,7 +36,9 @@ module Schaffner
       
       models.each do |model|
         records = model.all
-        puts records
+        records.each do |record|
+          add_to_index(record, model)
+        end
       end
     end
 
