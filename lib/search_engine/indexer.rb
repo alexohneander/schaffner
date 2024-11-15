@@ -1,6 +1,7 @@
 module Schaffner
   class Indexer
-    @index = []
+
+    @index = { documents: [], entry: [] }
 
     def self.index
       @index
@@ -13,19 +14,30 @@ module Schaffner
     def add_to_index(document, model)
       puts "Adding #{document} with the Type #{model.name} to the index."
       
-      # Cleaning Sanitize
+      self.index[:documents] << [document, model.name]
+    
+      word_counts = {}
+      # Counting words in document
       document.attributes.each do |attr_name, attr_value|
-        if attr_value.is_a?(String) && attr_name != "slug"
-
+        if attr_value.is_a?(String)
           attr_value = ActionView::Base.full_sanitizer.sanitize(attr_value)
           attr_value = attr_value.downcase
-
-          document[attr_name] = attr_value
+    
+          words = attr_value.split(" ")
+          words.each do |word|
+            word_counts[word] ||= 0
+            word_counts[word] += 1
+          end
         end
       end
-
-      self.index << [document, model.name]
+    
+      entry = word_counts.map do |word, count|
+        { word: word, id: document.id, model_name: model.name, count: count }
+      end
+    
+      self.index[:entry] << entry.flatten
     end
+    
 
     def initialize
       # @index = Index.new(index_dir)
