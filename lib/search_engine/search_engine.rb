@@ -53,6 +53,7 @@ module Schaffner
     def bm25(keyword)
       result = []
       idf_score = idf(keyword)
+      puts idf_score
       # let mut result = HashMap::new();
       #   let idf_score = self.idf(kw);
       #   let avdl = self.avdl();
@@ -67,12 +68,27 @@ module Schaffner
     def idf(keyword)
       index = self.indexer.index
       n = index[:documents].count
-      puts n
-    #   pub fn idf(&self, kw: &str) -> f64 {
-    #     let n = self.number_of_documents() as f64;
-    #     let n_kw = self.get_urls(kw).len() as f64;
-    #     ((n - n_kw + 0.5) / (n_kw + 0.5) + 1.0).ln()
-    # }
+      docs = get_docs(keyword)
+      
+      n_keyword = docs.count
+
+      idf = ((n - n_keyword + 0.5) / (n_keyword + 0.5) + 1.0) 
+      return idf
+    end
+    
+    def get_docs(keyword)
+      n_keyword = []
+      entrys_docs = self.indexer.index[:entry]
+
+      entrys_docs.each do |entry_doc|
+        entry_doc.each do |entry| 
+          if entry[:word] == keyword
+            n_keyword << entry
+          end
+        end
+      end
+
+      return n_keyword
     end
   end
 end
