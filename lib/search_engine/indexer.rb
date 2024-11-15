@@ -6,44 +6,20 @@ module Schaffner
     def self.index
       @index
     end
+
     def index
       self.class.index
     end
-
-    # Add Documents to the Index
-    def add_to_index(document, model)
-      puts "Adding #{document} with the Type #{model.name} to the index."
-      
-      self.index[:documents] << [document, model.name]
-    
-      word_counts = {}
-      # Counting words in document
-      document.attributes.each do |attr_name, attr_value|
-        if attr_value.is_a?(String)
-          attr_value = ActionView::Base.full_sanitizer.sanitize(attr_value)
-          attr_value = attr_value.downcase
-    
-          words = attr_value.split(" ")
-          words.each do |word|
-            word_counts[word] ||= 0
-            word_counts[word] += 1
-          end
-        end
-      end
-    
-      entry = word_counts.map do |word, count|
-        { word: word, id: document.id, model_name: model.name, count: count }
-      end
-    
-      self.index[:entry] << entry.flatten
-    end
-    
 
     def initialize
       # @index = Index.new(index_dir)
     end
 
     def create_index
+      # Empty Index, to start fresh
+      self.index[:documents] = []
+      self.index[:entry] = []
+
       models = get_all_models
       
       models.each do |model|
@@ -52,6 +28,20 @@ module Schaffner
           add_to_index(record, model)
         end
       end
+    end
+
+    def self.normalize_string(content)
+      content = normalize_string(content)
+      return content
+    end
+
+    def normalize_string(content)
+      content = ActionView::Base.full_sanitizer.sanitize(content)
+      content = content.downcase
+      content = content.parameterize
+      content = content.gsub!('-', ' ')
+
+      return content
     end
 
     private 
@@ -70,6 +60,33 @@ module Schaffner
       end
 
       return searchable_models
+    end
+
+    # Add Documents to the Index
+    def add_to_index(document, model)
+      puts "Adding #{document} with the Type #{model.name} to the index."
+      
+      self.index[:documents] << [document, model.name]
+    
+      # Counting words in document
+      word_counts = {}
+      document.attributes.each do |attr_name, attr_value|
+        if attr_value.is_a?(String)
+          attr_value = normalize_string(attr_value)
+    
+          words = attr_value.split(" ")
+          words.each do |word|
+            word_counts[word] ||= 0
+            word_counts[word] += 1
+          end
+        end
+      end
+    
+      entry = word_counts.map do |word, count|
+        { word: word, id: document.id, model_name: model.name, count: count }
+      end
+    
+      self.index[:entry] << entry.flatten
     end
   end
 end
